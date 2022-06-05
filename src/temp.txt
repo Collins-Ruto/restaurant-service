@@ -1,0 +1,22 @@
+pub fn order(table_number: i16, food_choice: String) -> Self{
+        let food: &str = &*food_choice;
+        if MENU_ITEMS.contains(&food) {
+            env::log_str("Your order is confirmed");
+            let food_index: usize = MENU_ITEMS.iter().position(|&x| x == &food_choice).unwrap();
+            let cost: f32 = MENU_PRICES[food_index];
+            Self {
+                table : table_number,
+                food: food_choice,
+                cost : cost,
+                rating: 4,
+            }
+        }else {
+            env::log_str("Your does not exist in our inventory, please try again");
+            Self {
+                table : 0,
+                food: String::new(),
+                cost : 0.0,
+                rating: 4,
+            }
+        }    
+    }
