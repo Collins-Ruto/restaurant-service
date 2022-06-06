@@ -1,4 +1,20 @@
-use near_sdk::{env};
+use near_sdk::{env, log};
+
+pub fn hello(rating: f32) {
+    log!("
+        Welcome to Gees reastaurant \n
+        Our services currently have an average rating of {}
+    ", rating);
+    env::log_str(
+        "Function calls are as follows:
+        menu: 'menu'
+        order: 'order {\"table_number\", \"food_choice\"}'
+        reciept: 'reciept {\"table_number\"}'
+        pay: 'pay {\"table_number\"}'
+        ratings: 'ratings {\"rating\", \"table_number\"}'
+        "
+    );
+}
 
 pub fn menu() {
     env::log_str("\n
@@ -21,6 +37,7 @@ pub fn menu() {
                 Baked Chocolate Chip Cookie $8.0, 
                 Chocolate Cake              $8.0, 
                 Traditional Apple Pie       $8.50, 
-                ,Selection of Ice-cream      $2.0, 
+                ,Selection of Ice-cream      $2.0,
+            Call 
         ")
 }
