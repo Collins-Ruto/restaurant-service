@@ -3,41 +3,21 @@ use near_sdk::{env, log, near_bindgen};
 use std::collections::HashMap;
 
 mod info;
-
-// A constant list of food choices that the restaurant offers.
-// The index of food in the MENU_ITEMS array matches its respective price index in the MENU_PRICES
-const MENU_ITEMS: [&str; 16] = [
-    "Striploin steak",
-    "T-Bone steak",
-    "Boz Centre Cut Fillet",
-    "Tomahawk Ribeye steak",
-    "Fried egg",
-    "Prawns",
-    "Mushroom",
-    "Onion rings",
-    "Roast baby potatoes",
-    "Sweet potato fries ",
-    "Roast veggies",
-    "Tender greens salad ",
-    "Chocolate Chip Cookie",
-    "Chocolate Cake",
-    "Traditional Apple Pie",
-    "Selection of Ice-cream",
-];
-const MENU_PRICES: [f32; 16] = [
-    40.0, 37.0, 35.0, 75.0, 3.0, 5.0, 4.0, 3.50, 7.0, 6.50, 7.0, 6.50, 8.0, 8.0, 8.50, 2.0,
-];
+mod payments;
 
 /*
     This is a restaurant service contract where clients can get to a restaurant and get the restaurant's
     near account. With it, they can check the menu, make food orders, add ratings and also pay for their food items.
     This can all be done securely and anoymously.
 */
+
 #[near_bindgen]
 #[derive(Default, BorshDeserialize, BorshSerialize)]
 pub struct Contract {
-    // HashMap is used to store multiple sessions of different clients on different unique tables.
+    // HashMaps are used to store multiple sessions of different clients on different unique tables.
+    // A list of food choices that the restaurant offers and prices for each also here
     // Table numbers are therefore used as keys.
+    menu: HashMap<String, f32>,
     table_allocation: HashMap<u8, Client>,
     // all_ratings stores all ratings made by clients and the avg_rating stored the final computed average rating
     all_ratings: Vec<u8>,
@@ -51,7 +31,6 @@ pub struct Contract {
 #[near_bindgen]
 #[derive(Default, BorshDeserialize, BorshSerialize, Clone)]
 pub struct Client {
-    // SETUP CONTRACT STATE
     table: u8,
     food: String,
     cost: f32,
@@ -69,10 +48,13 @@ impl Contract {
     }
 
     // Initialization function for the contract and setting the initial avg_rating
+    // Private thus only called by restaurant owner
     #[result_serializer(borsh)]
     #[init]
+    #[private]
     pub fn new() -> Contract {
         Contract {
+            menu: info::menu_items(),
             table_allocation: HashMap::new(),
             all_ratings: Vec::new(),
             avg_rating: 5.0,
@@ -84,15 +66,15 @@ impl Contract {
     */
     pub fn main(&mut self, table_number: u8, food_choice: String) {
         // convert food_choice from string to str so that it can be used to iterate through MENU_ITEMS
-        let food: &str = &*food_choice;
-        log!("Table number {} your order is {} ", &table_number, &food);
+        // let food: &str = &*food_choice;
+        log!("Table number {} your order is {} ", &table_number, &food_choice);
         // Check if the client's food exists in the MENU_ITEMS
-        if MENU_ITEMS.contains(&food) {
+        if self.menu.contains_key(&food_choice) {
             env::log_str("Your order is confirmed");
-            // Get the index of the food from the MENU_ITEMS so as to match the order's price
-            let food_index: usize = MENU_ITEMS.iter().position(|&x| x == &food_choice).unwrap();
+            // // Get the index of the food from the MENU_ITEMS so as to match the order's price
+            // let food_index: usize = MENU_ITEMS.iter().position(|&x| x == &food_choice).unwrap();
             // The cost is currently in dollars thus divided by the current value of NEAR to convert it to near
-            let cost: f32 = MENU_PRICES[food_index]; // 5.64
+            let cost: f32 = self.menu[&food_choice]; // 5.64
             let client_new = Client {
                 table: table_number,
                 food: food_choice,
@@ -105,7 +87,7 @@ impl Contract {
                 self.table_allocation[&table_number].cost
             );
         } else {
-            env::log_str("Your does not exist in our inventory, please try again");
+            env::log_str("Your item does not exist in our inventory, please try again");
         };
     }
 
@@ -130,28 +112,27 @@ impl Contract {
         let charge = self.table_allocation[&table_number].cost;
         log!("deposited {} ", tokens);
         // convert unsigned integer to float and yocto to near
-        let token_float = ((tokens as f32) / 1000_000_000_000_000_000_000_000.0) + 0.0001;
-        log!("token float: {}, cost: {}", token_float, charge);
+        let token_near = to_near(tokens);
+        log!("cost: {}, token near {}", charge, token_near);
         // if checks to compare the token recieved to the expected charge for the meals
-        if token_float == charge {
-            env::log_str("successful");
-            return;
-        }
-        if token_float > charge {
+        if token_near <= 0.00002 {
+            env::log_str("unsuccessful");
+            return
+        } if token_near + 0.00002 > charge {
             log!(
                 "You paid more by {} we hope it's a tip",
-                (charge) - token_float
+                (token_near - charge)
             );
             return;
-        }
-        if token_float < charge {
+        } if token_near + 0.00002 < charge {
             log!(
                 "You paid less by {} please consider paying up",
-                (charge) - token_float
+                (charge - token_near)
             );
             return;
         } else {
-            env::log_str("unsuccessful please add an amount")
+                env::log_str("successful");
+                return;
         }
     }
     // Manage client ratings and Restaurant avarage ratings
@@ -179,7 +160,14 @@ impl Contract {
     pub fn views(&self) {
         let num_of_clients = self.table_allocation.len();
         log!("You currently have {} clients", num_of_clients);
+        log!("food Prawns is for {:?}", self.menu.get_key_value("Prawns"));
+        log!("food Prawns is for {:?}", self.menu.contains_key("Prawns"))
+
     }
+}
+
+fn to_near(yocto: u128) -> f32 {
+         (yocto as f32) / 1_000_000_000_000_000_000_000_000.0
 }
 
 /*
@@ -193,7 +181,7 @@ impl Contract {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test]
+    #[test] // test initialization function
     fn restaurant_initialization() {
         let contract = Contract::new();
         assert_eq!(5.0, contract.avg_rating);
@@ -226,13 +214,41 @@ mod tests {
         assert!(5.0 > contract.avg_rating); // average rating should be lower
     }
 
-    // #[test]
-    // fn payable() {
-    //     let mut contract = Contract::new();
-    //     contract.main(3, "Mushroom".to_string());
-    //     contract.pay(3);
-    //     assert_eq!(f32, contract.table_allocation[&3].cost);
-    // }
+    #[test]
+    fn pay_test(){
+        // fried egg is used which costs 3 dollars or near
+        // Paying excess
+        let mut contract = Contract::new();
+        contract.main(5, "Fried egg".to_string()); 
+        let cost = contract.table_allocation[&5].cost;
+        let token: u128 = 2 * u128::pow(10, 24); // convert 2 near to equivalent yocto
+        let status: i8 = payments::pay_test(token, cost);
+        assert_eq!(-1, status);
+        // Paying less
+        contract.main(5, "Fried egg".to_string());
+        let cost = contract.table_allocation[&5].cost;
+        let token: u128 = 4 * u128::pow(10, 24); // convert 4 near to equivalent yocto
+        let status: i8 = payments::pay_test(token, cost);
+        assert_eq!(2, status);
+        //  Paying right ammount
+        contract.main(5, "Fried egg".to_string());
+        let cost = contract.table_allocation[&5].cost;
+        let token: u128 = 3 * u128::pow(10, 24); // convert 3 near to equivalent yocto
+        let status: i8 = payments::pay_test(token, cost);
+        assert_eq!(1, status);
+        // Paying 0 near
+        contract.main(5, "Fried egg".to_string());
+        let cost = contract.table_allocation[&5].cost;
+        let token: u128 = 0 * u128::pow(10, 24); // convert 3 near to equivalent yocto
+        let status: i8 = payments::pay_test(token, cost);
+        assert_eq!(0, status);
+    }
 
-    // TESTS HERE
+    #[test]
+    fn test_hash() {
+        let contract = Contract::new();
+        let bools = contract.menu.contains_key(&"Prawns".to_string());
+        log!("{}", bools);
+        assert_eq!(true, bools)
+    }
 }

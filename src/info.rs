@@ -1,4 +1,27 @@
 use near_sdk::{env, log};
+use std::collections::HashMap;
+
+pub fn menu_items() -> HashMap<String, f32> {
+    HashMap::from([
+    ("Strip steak".to_string(),12.0),
+    (stg("T-Bone steak"),17.0),
+    (stg("Cut Fillet"),15.0),
+    (stg("Ribeye steak"),15.0),
+    (stg("Fried egg"),3.0),
+    (stg("Prawns"),5.0),
+    (stg("Mushroom"),4.0),
+    (stg("Onion rings"),3.50),
+    (stg("Roast potatoes"), 7.0),
+    (stg("Roast veggies"), 8.0),
+    (stg("Salad "), 7.65),
+    (stg("Apple Pie"), 0.1),
+    (stg("Ice-cream"), 6.2)
+    ])
+}
+
+fn stg(food: &str) -> String {
+    String::from(food)
+}
 
 pub fn hello(rating: f32) {
     log!("

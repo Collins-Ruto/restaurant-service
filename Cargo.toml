@@ -1,5 +1,5 @@
 [package]
-name = "rust-template"
+name = "restaurant-service"
 version = "0.1.0"
 authors = ["Collins Ruto <collinsruto48@gmail.com>"]
 edition = "2018"
