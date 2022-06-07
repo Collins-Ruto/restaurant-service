@@ -40,19 +40,19 @@ pub fn hello(rating: f32) {
 pub fn menu() {
     env::log_str("\n
             BEEF
-                Strip steak                 $12.0, 
-                Cut Fillet                  $15.0, 
-                Ribeye steak                $15.0, 
+                Strip steak                 12.0 Ⓝ, 
+                Cut Fillet                  15.0 Ⓝ, 
+                Ribeye steak                15.0 Ⓝ, 
             TOPPINGS
-                Fried egg                   $3.0, 
-                Prawns                      $5.0, 
-                mushrooms                   $4.0, 
-            SIDES       
-                Roast potatoes              $7.0, 
-                Roast veggies               $8.0, 
-                Salad                       $7.65, 
+                Fried egg                   3.00 Ⓝ, 
+                Prawns                      5.00 Ⓝ, 
+                mushrooms                   4.00 Ⓝ, 
+            SIDES
+                Roast potatoes              7.00 Ⓝ, 
+                Roast veggies               8.09 Ⓝ, 
+                Salad                       7.65 Ⓝ, 
             DESSERTS
-                Apple Pie                   $8.50, 
-                Ice-cream                   $6.2,
+                Apple Pie                   8.50 Ⓝ, 
+                Ice-cream                   6.20 Ⓝ,
         ")
-}
+ }
