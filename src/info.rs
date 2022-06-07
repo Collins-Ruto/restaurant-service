@@ -3,19 +3,17 @@ use std::collections::HashMap;
 
 pub fn menu_items() -> HashMap<String, f32> {
     HashMap::from([
-    ("Strip steak".to_string(),12.0),
-    (stg("T-Bone steak"),17.0),
-    (stg("Cut Fillet"),15.0),
-    (stg("Ribeye steak"),15.0),
-    (stg("Fried egg"),3.0),
-    (stg("Prawns"),5.0),
-    (stg("Mushroom"),4.0),
-    (stg("Onion rings"),3.50),
-    (stg("Roast potatoes"), 7.0),
-    (stg("Roast veggies"), 8.0),
-    (stg("Salad "), 7.65),
-    (stg("Apple Pie"), 0.1),
-    (stg("Ice-cream"), 6.2)
+    ("strip steak".to_string(),12.0),
+    (stg("cut fillet"),15.0),
+    (stg("ribeye steak"),15.0),
+    (stg("fried egg"),3.0),
+    (stg("prawns"),5.0),
+    (stg("mushroom"),4.0),
+    (stg("roast potatoes"), 7.0),
+    (stg("roast veggies"), 8.0),
+    (stg("salad "), 7.65),
+    (stg("apple Pie"), 8.50),
+    (stg("ice-cream"), 6.2)
     ])
 }
 
@@ -42,25 +40,19 @@ pub fn hello(rating: f32) {
 pub fn menu() {
     env::log_str("\n
             BEEF
-                Striploin steak             $40.0, 
-                T-Bone steak                $37.0, 
-                Centre Cut Fillet           $35.0, 
-                Tomahawk Ribeye steak       $75.0, 
+                Strip steak                 $12.0, 
+                Cut Fillet                  $15.0, 
+                Ribeye steak                $15.0, 
             TOPPINGS
                 Fried egg                   $3.0, 
                 Prawns                      $5.0, 
-                Sauteed mushrooms           $4.0, 
-                Onion rings                 $3.50, 
+                mushrooms                   $4.0, 
             SIDES       
-                Roast baby potatoes         $7.0, 
-                Sweet potato fries          $6.50, 
-                Roast veggies               $7.0, 
-                Tender greens salad         $6.50, 
+                Roast potatoes              $7.0, 
+                Roast veggies               $8.0, 
+                Salad                       $7.65, 
             DESSERTS
-                Baked Chocolate Chip Cookie $8.0, 
-                Chocolate Cake              $8.0, 
-                Traditional Apple Pie       $8.50, 
-                ,Selection of Ice-cream      $2.0,
-            Call 
+                Apple Pie                   $8.50, 
+                Ice-cream                   $6.2,
         ")
 }

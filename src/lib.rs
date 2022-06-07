@@ -61,12 +61,11 @@ impl Contract {
         }
     }
     /*
-        The main function which the client calls to make an meal order. The client passes his food choice and table number.
+        The order function which the client calls to make an meal order. The client passes his food choice and table number.
         The data provided is used to initialized a new instance of a client object only if the food provided exists in the MENU_ITEMS.
     */
-    pub fn main(&mut self, table_number: u8, food_choice: String) {
-        // convert food_choice from string to str so that it can be used to iterate through MENU_ITEMS
-        // let food: &str = &*food_choice;
+    pub fn order(&mut self, table_number: u8, food_choice: String) {
+        let food_choice = food_choice.to_lowercase();
         log!("Table number {} your order is {} ", &table_number, &food_choice);
         // Check if the client's food exists in the MENU_ITEMS
         if self.menu.contains_key(&food_choice) {
@@ -188,12 +187,12 @@ mod tests {
     }
 
     #[test]
-    fn create_user_1() {
+    fn create_user() {
         let mut contract = Contract::new();
-        contract.main(2, "Prawns".to_string());
-        contract.main(4, "Fried egg".to_string());
+        contract.order(2, "Prawns".to_string()); // used uppercase to test if its converted to lowercase
+        contract.order(4, "Fried egg".to_string());
         assert_eq!(2, contract.table_allocation.len());
-        assert_eq!("Prawns".to_string(), contract.table_allocation[&2].food); // assert right food is served
+        assert_eq!("prawns".to_string(), contract.table_allocation[&2].food); // assert right food is served
         let prawns_cost = 5.0; // price of prawns read directly from the MENU_PRICES array
         assert_eq!(prawns_cost, contract.table_allocation[&2].cost); // check if price is correct for the food ordered
     }
@@ -208,7 +207,7 @@ mod tests {
     #[test]
     fn add_ratings() {
         let mut contract = Contract::new();
-        contract.main(2, "Prawns".to_string());
+        contract.order(2, "Prawns".to_string());
         assert_eq!(5.0, contract.avg_rating);
         contract.ratings(4, 2); // 4 is client rating and 2 is table number
         assert!(5.0 > contract.avg_rating); // average rating should be lower
@@ -219,25 +218,25 @@ mod tests {
         // fried egg is used which costs 3 dollars or near
         // Paying excess
         let mut contract = Contract::new();
-        contract.main(5, "Fried egg".to_string()); 
+        contract.order(5, "Fried egg".to_string()); 
         let cost = contract.table_allocation[&5].cost;
         let token: u128 = 2 * u128::pow(10, 24); // convert 2 near to equivalent yocto
         let status: i8 = payments::pay_test(token, cost);
         assert_eq!(-1, status);
         // Paying less
-        contract.main(5, "Fried egg".to_string());
+        contract.order(5, "Fried egg".to_string());
         let cost = contract.table_allocation[&5].cost;
         let token: u128 = 4 * u128::pow(10, 24); // convert 4 near to equivalent yocto
         let status: i8 = payments::pay_test(token, cost);
         assert_eq!(2, status);
         //  Paying right ammount
-        contract.main(5, "Fried egg".to_string());
+        contract.order(5, "Fried egg".to_string());
         let cost = contract.table_allocation[&5].cost;
         let token: u128 = 3 * u128::pow(10, 24); // convert 3 near to equivalent yocto
         let status: i8 = payments::pay_test(token, cost);
         assert_eq!(1, status);
         // Paying 0 near
-        contract.main(5, "Fried egg".to_string());
+        contract.order(5, "Fried egg".to_string());
         let cost = contract.table_allocation[&5].cost;
         let token: u128 = 0 * u128::pow(10, 24); // convert 3 near to equivalent yocto
         let status: i8 = payments::pay_test(token, cost);
@@ -245,9 +244,9 @@ mod tests {
     }
 
     #[test]
-    fn test_hash() {
+    fn test_hash_map() {
         let contract = Contract::new();
-        let bools = contract.menu.contains_key(&"Prawns".to_string());
+        let bools = contract.menu.contains_key(&"prawns".to_string());
         log!("{}", bools);
         assert_eq!(true, bools)
     }

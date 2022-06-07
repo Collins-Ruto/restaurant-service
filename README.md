@@ -66,12 +66,12 @@ Call to get initial instructions on how to use contract with the current restaur
             avg_rating: 5.0,
         }
     }
-## Main food order function
+## order food order function
 
-The main function with which the client calls to make an meal order. The client passes his food choice and table number.
+The order function with which the client calls to make an meal order. The client passes his food choice and table number.
 The data provided is used to initialized a new instance of a client object only if the food provided exists in the Contract.menu HashMap.
 
-    pub fn main(&mut self, table_number: u8, food_choice: String) {
+    pub fn order(&mut self, table_number: u8, food_choice: String) {
         ...// initialization
     }
 
@@ -81,7 +81,7 @@ The data provided is used to initialized a new instance of a client object only 
 </summary>
 <br/>
 
-    pub fn main(&mut self, table_number: u8, food_choice: String) {
+    pub fn order(&mut self, table_number: u8, food_choice: String) {
         // convert food_choice from string to str so that it can be used to iterate through MENU_ITEMS
         // let food: &str = &*food_choice;
         log!("Table number {} your order is {} ", &table_number, &food_choice);
@@ -203,13 +203,13 @@ get more details
     mod tests {
         use super::*;
 
-Test the new and main methods agains Prawns and Fried egg whose properties are predefined struct contract.menu.
+Test the new and order methods agains Prawns and Fried egg whose properties are predefined struct contract.menu.
 
     #[test]
     fn create_user_1() {
         let mut contract = Contract::new();
-        contract.main(2, "Prawns".to_string());
-        contract.main(4, "Fried egg".to_string());
+        contract.order(2, "Prawns".to_string());
+        contract.order(4, "Fried egg".to_string());
         assert_eq!(2, contract.table_allocation.len());
         // assert right food is served
         assert_eq!("Prawns".to_string(), contract.table_allocation[&2].food); 
@@ -233,7 +233,7 @@ We test if when a valid client rating the restaurant there's change on the resta
     #[test]
     fn add_ratings() {
         let mut contract = Contract::new();
-        contract.main(2, "Prawns".to_string());
+        contract.order(2, "Prawns".to_string());
         assert_eq!(5.0, contract.avg_rating);
         contract.ratings(4, 2); // 4 is client rating and 2 is table number
         assert!(5.0 > contract.avg_rating); // average rating should be lower
@@ -248,7 +248,7 @@ The function responds with "status codes" for each: `-1` for less, `0` for none,
         // fried egg is used which costs 3 dollars or near
         // Paying excess
             let mut contract = Contract::new();
-            contract.main(5, "Fried egg".to_string()); 
+            contract.order(5, "Fried egg".to_string()); 
             let token: u128 = 2 * u128::pow(10, 24); 
             // convert 2 near to equivalent yocto
             let cost = contract.table_allocation[&5].cost;
@@ -261,20 +261,20 @@ More of the Payment tests...
 <br/>
 
     // Paying less
-        contract.main(5, "Fried egg".to_string());
+        contract.order(5, "Fried egg".to_string());
         let token: u128 = 4 * u128::pow(10, 24); 
         // convert 4 near to equivalent yocto
         let cost = contract.table_allocation[&5].cost;
         let status: i8 = payments::pay_test(token, cost);
         assert_eq!(2, status);
         //  Paying right ammount
-        contract.main(5, "Fried egg".to_string());
+        contract.order(5, "Fried egg".to_string());
         let cost = contract.table_allocation[&5].cost;
         let token: u128 = 3 * u128::pow(10, 24); // convert 3 near to equivalent yocto
         let status: i8 = payments::pay_test(token, cost);
         assert_eq!(1, status);
         // Paying 0 near
-        contract.main(5, "Fried egg".to_string());
+        contract.order(5, "Fried egg".to_string());
         let cost = contract.table_allocation[&5].cost;
         let token: u128 = 0 * u128::pow(10, 24); // convert 3 near to equivalent yocto
         let status: i8 = payments::pay_test(token, cost);
@@ -283,14 +283,19 @@ More of the Payment tests...
 
 </details> <br>
 
-A pre-written list of commands to excecute on this contract can be found on my gist:
-> [Restaurant service tests]()
+A pre-written list of commands to excecute on this contract can be found here:
+
+> [Restaurant service tests](./src/commands/)
+
+or on my gist: 
+
+> [Restaurant service tests gist]()
 
 Built with the [Near Rust Template ](https://github.com/near/near-sdk-rs#pre-requisites)
 
-8. Build the contract
+<!-- 8. Build the contract
 
-    `RUSTFLAGS='-C link-arg=-s' cargo build --target wasm32-unknown-unknown --release`
+    `RUSTFLAGS='-C link-arg=-s' cargo build --target wasm32-unknown-unknown --release` -->
 
 **Get more info at:**
 
