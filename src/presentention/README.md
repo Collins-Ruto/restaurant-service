@@ -4,16 +4,11 @@ The smart contract is currently deployed and initialized on:
 
     restaurants.collinsrutto.testnet
 
-> NOTE: -- represents an integer entry such as `4`, while "__" String entry such as `"Prawns"`
-<br>
+> NOTE: -- represents an integer entry such as `4`, while "\_\_" String entry such as `"Prawns"` > <br>
 
 ### Create a new account;
 
     near deploy --account-id restaurants.collinsrutto.testnet --wasmFile target/wasm32-unknown-unknown/release/rust_template.wasm
-
-### initialize contract :
-
-    near call restaurants.collinsrutto.testnet new --account-id restaurants.collinsrutto.testnet
 
 ### Getting instructions for interacting with the smart Contract
 
@@ -21,7 +16,7 @@ The smart contract is currently deployed and initialized on:
 
 ### Calling for the menu ;
 
-    near view restaurants.collinsrutto.testnet menu --account-id collinsrutto.testnet
+    near call restaurants.collinsrutto.testnet menu --account-id collinsrutto.testnet
 
 ### Making an order for a meal ;
 
@@ -31,9 +26,17 @@ The smart contract is currently deployed and initialized on:
 
     near view restaurants.collinsrutto.testnet reciept '{"table_number": 3 }' --account-id collinsrutto.testnet
 
-### Make a payment ;
+### Make a more payment ;
 
-    near call restaurants.collinsrutto.testnet pay --account-id collinsrutto.testnet --deposit 3
+    near call restaurants.collinsrutto.testnet pay '{"table_number": 3}' --account-id collinsrutto.testnet --deposit 7
+
+### Make a exact payment ;
+
+    near call restaurants.collinsrutto.testnet pay '{"table_number": 3}' --account-id collinsrutto.testnet --deposit 5
+
+### Make a less payment ;
+
+    near call restaurants.collinsrutto.testnet pay '{"table_number": 3}' --account-id collinsrutto.testnet --deposit 3
 
 ### Rate the restaurants's services ;
 
