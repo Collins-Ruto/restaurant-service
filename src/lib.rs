@@ -11,7 +11,7 @@ mod info;
 */
 
 #[near_bindgen]
-#[derive(Default, BorshDeserialize, BorshSerialize)]
+#[derive(BorshDeserialize, BorshSerialize)]
 pub struct Contract {
     // HashMaps are used to store multiple sessions of different clients on different unique tables.
     // A list of food choices that the restaurant offers and prices for each also here
@@ -35,6 +35,18 @@ pub struct Client {
     cost: f32,
 }
 
+// Initialization function for the contract and setting the initial avg_rating
+impl Default for Contract {
+       fn default() -> Self {
+           Self {
+            menu: info::menu_items(),
+            table_allocation: HashMap::new(),
+            all_ratings: Vec::new(),
+            avg_rating: 5.0,
+        }
+    }
+}
+
 #[near_bindgen]
 impl Contract {
     // call to get initial instructions on how to use contract
@@ -45,20 +57,7 @@ impl Contract {
     pub fn menu() {
         info::menu();
     }
-
-    // Initialization function for the contract and setting the initial avg_rating
-    // Private thus only called by restaurant owner
-    #[result_serializer(borsh)]
-    #[init]
-    #[private]
-    pub fn new() -> Contract {
-        Contract {
-            menu: info::menu_items(),
-            table_allocation: HashMap::new(),
-            all_ratings: Vec::new(),
-            avg_rating: 5.0,
-        }
-    }
+    
     /*
         The order function which the client calls to make an meal order. The client passes his food choice and table number.
         The data provided is used to initialized a new instance of a client object only if the food provided exists in the MENU_ITEMS.
@@ -199,7 +198,7 @@ mod tests {
 
     #[test]
     fn create_user() {
-        let mut contract = Contract::new();
+        let mut contract: Contract = Contract::default();
         contract.order(2, "Prawns".to_string()); // used uppercase to test if its converted to lowercase
         contract.order(4, "Fried egg".to_string());
         assert_eq!(2, contract.table_allocation.len());
@@ -210,14 +209,14 @@ mod tests {
     #[test]
     #[should_panic]
     fn add_ratings_without_table() {
-        let mut contract = Contract::new();
+        let mut contract: Contract = Contract::default();
         contract.ratings(2, 3); // 2 is client rating and 3 is table number
         assert!(5.0 > contract.avg_rating); // average rating should be lower if the rating is added
     }
 
     #[test]
     fn add_ratings() {
-        let mut contract = Contract::new();
+        let mut contract: Contract = Contract::default();
         contract.order(2, "Prawns".to_string());
         assert_eq!(5.0, contract.avg_rating);
         contract.ratings(4, 2); // 4 is client rating and 2 is table number
@@ -231,7 +230,7 @@ mod tests {
         context.is_view = false;
         testing_env!(context);
 
-        let mut contract = Contract::new();
+        let mut contract: Contract = Contract::default();
         contract.order(5, "Fried egg".to_string()); 
         let response = contract.pay(5);
         assert_eq!("successful".to_string(), response)
@@ -244,7 +243,7 @@ mod tests {
         context.is_view = false;
         testing_env!(context);
 
-        let mut contract = Contract::new();
+        let mut contract: Contract = Contract::default();
         contract.order(5, "Fried egg".to_string()); 
         let response = contract.pay(5);
         assert_eq!("paid more".to_string(), response)
@@ -257,7 +256,7 @@ mod tests {
         context.is_view = false;
         testing_env!(context);
 
-        let mut contract = Contract::new();
+        let mut contract: Contract = Contract::default();
         contract.order(5, "Fried egg".to_string()); 
         let response = contract.pay(5);
         assert_eq!("unsuccessful".to_string(), response)
@@ -265,7 +264,7 @@ mod tests {
     
     #[test]
     fn test_hash_map() {
-        let contract = Contract::new();
+        let contract: Contract = Contract::default();
         let bools = contract.menu.contains_key(&"prawns".to_string());
         log!("{}", bools);
         assert_eq!(true, bools)

@@ -38,8 +38,20 @@ This is all the clients information we'll be storing per table in the contract.t
     pub struct Client {
         ...//initialization here
     }
-## Implimentation of the Contract struct
 
+Initialization function for the contract and setting the initial avg_rating.
+
+    impl Default for Contract {
+        fn default() -> Self {
+            Self {
+                menu: info::menu_items(),
+                table_allocation: HashMap::new(),
+                all_ratings: Vec::new(),
+                avg_rating: 5.0,
+            }
+        }
+    }
+## Implimentation of the Contract struct
 
     impl Contract {
         ...// implimentation here
@@ -50,22 +62,7 @@ Call to get initial instructions on how to use contract with the current restaur
     pub fn hello(&self) {
         info::hello(self.avg_rating);
     }
-
-
- Initialization function for the contract and setting the initial avg_rating.
- Note: Private thus only called by restaurant owner or the initial account only.
  
-    #[result_serializer(borsh)]
-    #[init]
-    #[private]
-    pub fn new() -> Contract {
-        Contract {
-            menu: info::menu_items(),
-            table_allocation: HashMap::new(),
-            all_ratings: Vec::new(),
-            avg_rating: 5.0,
-        }
-    }
 ## order food order function
 
 The order function with which the client calls to make an meal order. The client passes his food choice and table number.
