@@ -40,8 +40,4 @@ The smart contract is currently deployed and initialized on:
 
 ### Rate the restaurants's services ;
 
-    near call restaurants.collinsrutto.testnet ratings '{"rating": 5, "table_number": 3}' --account-id collinsrutto.testnet
-
-### View the current number of clients registered on the restaurants
-
-    near view restaurants.collinsrutto.testnet views --account-id collinsrutto.testnet
+    near call restaurants.collinsrutto.testnet ratings '{"rating": 3, "table_number": 3}' --account-id collinsrutto.testnet

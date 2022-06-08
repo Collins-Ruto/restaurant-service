@@ -37,8 +37,8 @@ pub struct Client {
 
 // Initialization function for the contract and setting the initial avg_rating
 impl Default for Contract {
-       fn default() -> Self {
-           Self {
+    fn default() -> Self {
+        Self {
             menu: info::menu_items(),
             table_allocation: HashMap::new(),
             all_ratings: Vec::new(),
@@ -57,14 +57,17 @@ impl Contract {
     pub fn menu() {
         info::menu();
     }
-    
     /*
         The order function which the client calls to make an meal order. The client passes his food choice and table number.
         The data provided is used to initialized a new instance of a client object only if the food provided exists in the MENU_ITEMS.
     */
     pub fn order(&mut self, table_number: u8, food_choice: String) {
         let food_choice = food_choice.to_lowercase();
-        log!("Table number {} your order is {} ", &table_number, &food_choice);
+        log!(
+            "Table number {} your order is {} ",
+            &table_number,
+            &food_choice
+        );
         // Check if the client's food exists in the MENU_ITEMS
         if self.menu.contains_key(&food_choice) {
             env::log_str("Your order is confirmed");
@@ -113,18 +116,23 @@ impl Contract {
         log!("cost: {}, token near {}", charge, token_near);
         // if checks to compare the token recieved to the expected charge for the meals
         if token_near <= 0.00002 {
-            return "unsuccessful".to_string()
-
-        } if token_near - charge > 0.00002 {
-            log!("You paid more by {} we hope it's a tip",(token_near - charge));
-            return "paid more".to_string()
-
-        } if charge - token_near > 0.00002 {
-            log!("You paid less by {} please consider paying up",(charge - token_near));
-            return "paid less".to_string()
-
+            return "unsuccessful".to_string();
+        }
+        if token_near - charge > 0.00002 {
+            log!(
+                "You paid more by {} we hope it's a tip",
+                (token_near - charge)
+            );
+            return "paid more".to_string();
+        }
+        if charge - token_near > 0.00002 {
+            log!(
+                "You paid less by {} please consider paying up",
+                (charge - token_near)
+            );
+            return "paid less".to_string();
         } else {
-                return "successful".to_string()
+            return "successful".to_string();
         }
     }
     // Manage client ratings and Restaurant avarage ratings
@@ -148,18 +156,10 @@ impl Contract {
         self.avg_rating = total_ratings / ratings_count;
         log!("Current restaurant ratings stand at {}", self.avg_rating)
     }
-    //  a test functions
-    pub fn views(&self) {
-        let num_of_clients = self.table_allocation.len();
-        log!("You currently have {} clients", num_of_clients);
-        log!("food Prawns is for {:?}", self.menu.get_key_value("Prawns"));
-        log!("food Prawns is for {:?}", self.menu.contains_key("Prawns"))
-
-    }
 }
 
 fn to_near(yocto: u128) -> f32 {
-         (yocto as f32) / 1_000_000_000_000_000_000_000_000.0
+    (yocto as f32) / 1_000_000_000_000_000_000_000_000.0
 }
 
 /*
@@ -206,6 +206,7 @@ mod tests {
         let prawns_cost = 5.0; // price of prawns read directly from the MENU_PRICES array
         assert_eq!(prawns_cost, contract.table_allocation[&2].cost); // check if price is correct for the food ordered
     }
+
     #[test]
     #[should_panic]
     fn add_ratings_without_table() {
@@ -231,7 +232,7 @@ mod tests {
         testing_env!(context);
 
         let mut contract: Contract = Contract::default();
-        contract.order(5, "Fried egg".to_string()); 
+        contract.order(5, "Fried egg".to_string());
         let response = contract.pay(5);
         assert_eq!("successful".to_string(), response)
     }
@@ -244,7 +245,7 @@ mod tests {
         testing_env!(context);
 
         let mut contract: Contract = Contract::default();
-        contract.order(5, "Fried egg".to_string()); 
+        contract.order(5, "Fried egg".to_string());
         let response = contract.pay(5);
         assert_eq!("paid more".to_string(), response)
     }
@@ -257,11 +258,10 @@ mod tests {
         testing_env!(context);
 
         let mut contract: Contract = Contract::default();
-        contract.order(5, "Fried egg".to_string()); 
+        contract.order(5, "Fried egg".to_string());
         let response = contract.pay(5);
         assert_eq!("unsuccessful".to_string(), response)
     }
-    
     #[test]
     fn test_hash_map() {
         let contract: Contract = Contract::default();
