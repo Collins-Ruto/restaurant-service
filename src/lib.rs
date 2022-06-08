@@ -3,7 +3,6 @@ use near_sdk::{env, log, near_bindgen};
 use std::collections::HashMap;
 
 mod info;
-mod payments;
 
 /*
     This is a restaurant service contract where clients can get to a restaurant and get the restaurant's
@@ -105,7 +104,7 @@ impl Contract {
 
     // A payable function where clients can pay for their meals using NEAR tokens
     #[payable]
-    pub fn pay(&mut self, table_number: u8) {
+    pub fn pay(&mut self, table_number: u8) -> String {
         // Assign attached near and the cost of food for the table to variables
         let tokens = env::attached_deposit();
         let charge = self.table_allocation[&table_number].cost;
@@ -115,23 +114,18 @@ impl Contract {
         log!("cost: {}, token near {}", charge, token_near);
         // if checks to compare the token recieved to the expected charge for the meals
         if token_near <= 0.00002 {
-            env::log_str("unsuccessful");
-            return
-        } if token_near + 0.00002 > charge {
-            log!(
-                "You paid more by {} we hope it's a tip",
-                (token_near - charge)
-            );
-            return;
-        } if token_near + 0.00002 < charge {
-            log!(
-                "You paid less by {} please consider paying up",
-                (charge - token_near)
-            );
-            return;
+            return "unsuccessful".to_string()
+
+        } if token_near - charge > 0.00002 {
+            log!("You paid more by {} we hope it's a tip",(token_near - charge));
+            return "paid more".to_string()
+
+        } if charge - token_near > 0.00002 {
+            log!("You paid less by {} please consider paying up",(charge - token_near));
+            return "paid less".to_string()
+
         } else {
-                env::log_str("successful");
-                return;
+                return "successful".to_string()
         }
     }
     // Manage client ratings and Restaurant avarage ratings
@@ -180,10 +174,27 @@ fn to_near(yocto: u128) -> f32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test] // test initialization function
-    fn restaurant_initialization() {
-        let contract = Contract::new();
-        assert_eq!(5.0, contract.avg_rating);
+    use near_sdk::{testing_env, VMContext};
+
+    fn get_context(input: Vec<u8>, is_view: bool) -> VMContext {
+        VMContext {
+            current_account_id: "restaurants.collinsrutto.testnet".to_string(),
+            signer_account_id: "bob_near".to_string(),
+            signer_account_pk: vec![0, 1, 2],
+            predecessor_account_id: "collinsrutto.testnet".to_string(),
+            input,
+            block_index: 0,
+            block_timestamp: 0,
+            account_balance: 0,
+            account_locked_balance: 0,
+            storage_usage: 0,
+            attached_deposit: 0,
+            prepaid_gas: 10u64.pow(18),
+            random_seed: vec![0, 1, 2],
+            is_view,
+            output_data_receivers: vec![],
+            epoch_height: 19,
+        }
     }
 
     #[test]
@@ -200,7 +211,7 @@ mod tests {
     #[should_panic]
     fn add_ratings_without_table() {
         let mut contract = Contract::new();
-        contract.ratings(42, 3); // 2 is client rating and 3 is table number
+        contract.ratings(2, 3); // 2 is client rating and 3 is table number
         assert!(5.0 > contract.avg_rating); // average rating should be lower if the rating is added
     }
 
@@ -214,35 +225,44 @@ mod tests {
     }
 
     #[test]
-    fn pay_test(){
-        // fried egg is used which costs 3 dollars or near
-        // Paying excess
+    fn pay_expected_amount() {
+        let mut context = get_context(vec![], false);
+        context.attached_deposit = 3000000000000000000000000; // attaching 3 NEAR
+        context.is_view = false;
+        testing_env!(context);
+
         let mut contract = Contract::new();
         contract.order(5, "Fried egg".to_string()); 
-        let cost = contract.table_allocation[&5].cost;
-        let token: u128 = 2 * u128::pow(10, 24); // convert 2 near to equivalent yocto
-        let status: i8 = payments::pay_test(token, cost);
-        assert_eq!(-1, status);
-        // Paying less
-        contract.order(5, "Fried egg".to_string());
-        let cost = contract.table_allocation[&5].cost;
-        let token: u128 = 4 * u128::pow(10, 24); // convert 4 near to equivalent yocto
-        let status: i8 = payments::pay_test(token, cost);
-        assert_eq!(2, status);
-        //  Paying right ammount
-        contract.order(5, "Fried egg".to_string());
-        let cost = contract.table_allocation[&5].cost;
-        let token: u128 = 3 * u128::pow(10, 24); // convert 3 near to equivalent yocto
-        let status: i8 = payments::pay_test(token, cost);
-        assert_eq!(1, status);
-        // Paying 0 near
-        contract.order(5, "Fried egg".to_string());
-        let cost = contract.table_allocation[&5].cost;
-        let token: u128 = 0 * u128::pow(10, 24); // convert 3 near to equivalent yocto
-        let status: i8 = payments::pay_test(token, cost);
-        assert_eq!(0, status);
+        let response = contract.pay(5);
+        assert_eq!("successful".to_string(), response)
     }
 
+    #[test]
+    fn pay_more_amount() {
+        let mut context = get_context(vec![], false);
+        context.attached_deposit = 4000000000000000000000000; // attached 4 NEAR
+        context.is_view = false;
+        testing_env!(context);
+
+        let mut contract = Contract::new();
+        contract.order(5, "Fried egg".to_string()); 
+        let response = contract.pay(5);
+        assert_eq!("paid more".to_string(), response)
+    }
+
+    #[test]
+    fn pay_no_amount() {
+        let mut context = get_context(vec![], false);
+        context.attached_deposit = 0000000000000000000000000; // attached 0 NEAR
+        context.is_view = false;
+        testing_env!(context);
+
+        let mut contract = Contract::new();
+        contract.order(5, "Fried egg".to_string()); 
+        let response = contract.pay(5);
+        assert_eq!("unsuccessful".to_string(), response)
+    }
+    
     #[test]
     fn test_hash_map() {
         let contract = Contract::new();
