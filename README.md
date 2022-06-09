@@ -6,6 +6,8 @@ This is a restaurant service contract where clients can get to a restaurant and 
 near account. With it, they can check the menu, make food orders, add ratings and also pay for their food items.
 This can all be done securely and anoymously by leveraging on the characteristics of blockchains.
 <br/>
+A demo of how everything works can be found here [Loom video](https://www.loom.com/share/f139740afc5f4cab81b97b77922dd5b8)
+<br>
 
 ## Initialization for dependencies needed <br/>
 Borsh is the recommended serialization method for near smart contract development.
