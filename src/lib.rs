@@ -116,23 +116,23 @@ impl Contract {
         log!("cost: {}, token near {}", charge, token_near);
         // if checks to compare the token recieved to the expected charge for the meals
         if token_near <= 0.00002 {
-            return "unsuccessful".to_string();
+            return "unsuccessful".to_string()
         }
         if token_near - charge > 0.00002 {
             log!(
                 "You paid more by {} we hope it's a tip",
                 (token_near - charge)
             );
-            return "paid more".to_string();
+            return "paid more".to_string()
         }
         if charge - token_near > 0.00002 {
             log!(
                 "You paid less by {} please consider paying up",
                 (charge - token_near)
             );
-            return "paid less".to_string();
+            return "paid less".to_string()
         } else {
-            return "successful".to_string();
+            return "successful".to_string()
         }
     }
     // Manage client ratings and Restaurant avarage ratings
